@@ -1,0 +1,35 @@
+.body {
+    position: absolute;
+    top: 0;
+    left: 0;
+    min-height: 100%;
+    width: 100%;
+    z-index: -1;
+    background-color: rgb(246, 246, 246);
+}
+
+.body {
+    .image-slideshow {
+        max-height: 75vh;
+        width: 50%;
+        margin: 80px auto;
+        img {
+            height: 75vh;
+            width: 80%;
+            object-fit: cover;
+            object-position: center;
+            position: absolute;
+            left: 10%;
+            transition: all 2s;
+        }
+
+        .visible {
+            opacity: 1;
+        }
+
+        .not-visible {
+            opacity: 0;
+        }
+
+    }
+}

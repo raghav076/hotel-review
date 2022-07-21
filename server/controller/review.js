@@ -2,12 +2,34 @@ const { hotelModel } = require("../models/hotel");
 const { locationModel } = require("../models/location");
 const { reviewModel } = require("../models/review");
 
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+const getLocations = async (req, res) => {
+    try {
+        const locations = await locationModel.find();
+        return res.status(200).send(locations.map(l=>capitalizeFirstLetter(l.location)));
+    } catch (err) {
+        return res.status(500).send(err);
+    }
+}
+
+const getHotels = async (req, res) => {
+    try {
+        const hotels = await hotelModel.find({ location: req.query.location });
+        return res.status(200).send(hotels.map((h)=>capitalizeFirstLetter(h.hotel)));
+    } catch (err) { 
+        return res.status(500).send(err);
+    }    
+}
+
 const arrange = (reviews) => {
     let newReviews = {};
-    reviews.forEach(review => {
+    reviews.forEach((review) => {
         const r = { username: review.username, review: review.review, rating: review.rating, location: review.location.location };
         if (!newReviews[review.hotel.hotel]) {
-            newReviews[review.hotel.hotel] = {hotel: review.hotel.hotel, rating: review.rating, count: 1, reviews: [r]};
+            newReviews[review.hotel.hotel] = { hotel: review.hotel.hotel, rating: review.rating, count: 1, reviews: [r]};
         }
         else { 
             newReviews[review.hotel.hotel].rating = (review.rating + newReviews[review.hotel.hotel].count * newReviews[review.hotel.hotel].rating) / (newReviews[review.hotel.hotel].count + 1);
@@ -37,7 +59,7 @@ const getReview = async (req, res) => {
         query = { ...query, hotel: req.query.hotel };
     let reviews = await reviewModel.find(query).populate(['location', 'hotel']);
     if (reviews.length === 0) { 
-        return res.status(500).json("No Reviews Found");
+        return res.status(200).json([]);
     }
     reviews = arrange(reviews);
     let reviewsArray = Object.values(reviews);
@@ -54,7 +76,7 @@ const getLocation = async (req, res, next) => {
     }
     loc = await locationModel.findOne({ location: loc });
     if (!loc) {
-        return res.status(500).json("No Such Location Exists");
+        return res.status(200).json([]);
     }
     req.query.location = loc._id;
     next();
@@ -62,9 +84,11 @@ const getLocation = async (req, res, next) => {
 
 const getHotel = async (req, res, next) => {
     let hotel = req.query.hotel;
+    console.log(hotel);
     hotel = await hotelModel.findOne({ hotel: hotel });
+    console.log(hotel);
     if (!hotel) {
-        return res.status(500).json("No Such Hotel Exists");
+        return res.status(200).json([]);
     }
     req.query.hotel = hotel._id;
     next();
@@ -72,6 +96,7 @@ const getHotel = async (req, res, next) => {
 
 const checkLocation = async (req, res, next) => {
     try {
+        console.log(req.body);
         const location = req.body.location.toLowerCase();
         loc = await locationModel.findOne({ location: location });
         if (!loc) {
@@ -81,7 +106,6 @@ const checkLocation = async (req, res, next) => {
                     console.log('error', err);
                     return res.status(500).send(err.message);
                 }
-                console.log(newlocation)
                 req.body.location = newlocation._id;
                 next();
             });
@@ -97,6 +121,7 @@ const checkLocation = async (req, res, next) => {
 
 const checkHotel = async (req, res, next) => {
     try {
+        // req.body.hotel = req.body.hote.toLowerCase();
         const id = `${req.body.hotel.slice(0, 10)}_${req.body.location}`;
         const hotel = await hotelModel.findOne({ hotel_id: id });
         if (!hotel) {
@@ -132,4 +157,4 @@ const postReview = async (req, res) => {
     }
 }
 
-module.exports = { getReview, postReview, checkLocation, checkHotel, getLocation, getHotel };
+module.exports = { getReview, postReview, checkLocation, checkHotel, getLocation, getHotel, getHotels, getLocations };

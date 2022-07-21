@@ -1,0 +1,23 @@
+.star-div {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    font-size: 18px;
+    justify-content: flex-start;
+    .star-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+    }
+    .star {
+        cursor: pointer;
+        font-size: 30px;
+        &:hover {
+            color: rgb(208, 149, 0);
+        }
+    }
+    .star-outline {
+        color: rgb(255, 199, 56);
+    }
+}
